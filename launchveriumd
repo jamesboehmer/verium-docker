@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+DATADIR="${DATADIR:-/data}";
+TMPDIR="$(mktemp -d)";
+VERIUM_CONF="${TMPDIR}/verium.conf";
+VERIUM_PID="${TMPDIR}/verium.pid";
+
+if [[ ! -f /verium.conf ]]
+then
+	echo "Creating default verium.conf...";
+	[[ -f "${DATADIR}" ]] || mkdir -p "${DATADIR}";
+	cat > ${VERIUM_CONF} << EOF
+server=1
+daemon=1
+rpcuser=veriumuser
+rpcpassword=secret
+rpcallowip=172.*
+rpcallowip=127.0.0.1
+debug=1
+datadir=${DATADIR}
+
+EOF
+
+else
+	cp /verium.conf "${VERIUM_CONF}";
+fi
+
+
+VERIUM_NODES_URL="${VERIUM_NODES_URL:-http://www.vericoin.info/downloads/verium.conf}";
+if [[ "${VERIUM_NODES_URL}" != "" ]]
+then
+	echo "Downloading ${VERIUM_NODES_URL} ...";
+	curl -sL ${VERIUM_NODES_URL} | grep '^addnode=' >> "${VERIUM_CONF}";
+fi
+
+trap ctrl_c INT
+
+function ctrl_c() {
+	PID=$(cat ${VERIUM_PID})
+	kill $PID
+	while [[ 0 -eq 0 ]]
+	do
+		kill -0 $PID >/dev/null 2>&1 || exit 0
+	done
+}
+
+cd "${TMPDIR}";
+/veriumd -pid=${VERIUM_PID};
+
+tail -f "${DATADIR}/debug.log";
+exit $?

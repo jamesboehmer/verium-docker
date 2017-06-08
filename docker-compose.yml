@@ -1,0 +1,24 @@
+version: '2.0'
+services:
+  veriumd:
+    image: verium
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "36988"
+    command: "/launchveriumd"
+    environment:
+      - DATADIR
+      - VERIUM_NODES_URL
+    volumes:
+      - "${PWD}/data:/data"
+    restart: always
+  cpuminer:
+    image: verium
+    ports:
+      - "4048"
+    command: "cpuminer -o veriumd:36988 --user=veriumuser --pass=secret"
+    depends_on:
+      - veriumd
+    restart: always
