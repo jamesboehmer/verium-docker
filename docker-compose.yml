@@ -1,24 +1,33 @@
 version: '2.0'
 services:
   veriumd:
-    image: verium
+    image: jamesboehmer/verium
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "36988"
-    command: "/launchveriumd"
+      - "36988" # peer
+      - "32988" # peer testnet
+      - "33987" # RPC
+      - "32987" # RPC testnet
+    command: "launchveriumd"
     environment:
-      - DATADIR
-      - VERIUM_NODES_URL
+      - RPCPORT
+      - RPCUSER
+      - RPCPASS
     volumes:
-      - "${PWD}/data:/data"
+      - "${PWD}/data:/root/.verium"
     restart: always
   cpuminer:
-    image: verium
+    image: jamesboehmer/verium
     ports:
       - "4048"
-    command: "cpuminer -o veriumd:36988 --user=veriumuser --pass=secret"
+    command: "launchcpuminer"
+    environment:
+      - RPCHOST
+      - RPCPORT
+      - RPCUSER
+      - RPCPASS
     depends_on:
       - veriumd
     restart: always

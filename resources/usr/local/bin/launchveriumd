@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+RPCPORT="${RPCPORT:-33987}";
+RPCUSER="${RPCUSER:-veriumuser}";
+RPCPASS="${RPCPASS:-secret}";
+DATADIR="/root/.verium";
+TMPDIR="$(mktemp -d)";
+VERIUM_CONF="${DATADIR}/verium.conf";
+VERIUM_PID="/var/run/verium.pid";
+BLOCKFILE="${DATADIR}/blk0001.dat";
+VERIUM_NODES_URL="${VERIUM_NODES_URL:-http://www.vericoin.info/downloads/verium.conf}";
+BOOTSTRAP_URL="http://www.vericoin.info/downloads/bootstrap_VRM.zip";
+
+if [[ ! -f ${VERIUM_CONF} ]]
+then
+	echo "Creating default ${VERIUM_CONF}...";
+	[[ -f "${DATADIR}" ]] || mkdir -p "${DATADIR}";
+	cat > ${VERIUM_CONF} << EOF
+server=1
+daemon=1
+rpcuser=${RPCUSER}
+rpcpassword=${RPCPASS}
+rpcallowip=172.*
+rpcallowip=127.0.0.1
+rpcport=${RPCPORT}
+debug=1
+datadir=${DATADIR}
+pid=${VERIUM_PID}
+
+EOF
+
+	if [[ "${VERIUM_NODES_URL}" != "" ]]
+	then
+		echo "Downloading ${VERIUM_NODES_URL} ...";
+		curl -sL ${VERIUM_NODES_URL} | grep '^addnode=' >> "${VERIUM_CONF}";
+	fi
+
+fi
+
+chmod 600 "${VERIUM_CONF}";
+
+if [[ ! -f ${BLOCKFILE} ]]
+then
+	echo "Bootstrapping blockchaing file from ${BOOTSTRAP_URL} ...";
+	cd "${DATADIR}";
+	curl -sL "${BOOTSTRAP_URL}" > vrmbootstrap.zip;
+	unzip vrmbootstrap.zip;
+	mv bootstrap/* .;
+fi
+
+trap ctrl_c INT
+
+function ctrl_c() {
+	veriumd stop
+}
+
+cd "${TMPDIR}";
+veriumd
+
+tail -f "${DATADIR}/debug.log";
+exit $?
