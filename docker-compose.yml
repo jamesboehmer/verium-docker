@@ -2,9 +2,9 @@ version: '2.0'
 services:
   veriumd:
     image: jamesboehmer/verium
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     ports:
       - "36988" # peer
       - "32988" # peer testnet
