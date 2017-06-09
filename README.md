@@ -1,7 +1,7 @@
 Verium solo mining with docker
 ==
 
-A single Ubuntu image containing veriumd (the headless wallet daemon) and cpuminer (effectToCause's custom build that supports getwork).
+A single Ubuntu image containing [veriumd](https://github.com/VeriumReserve/verium) (the headless wallet daemon) and [cpuminer](https://github.com/effectsToCause/veriumMiner).
 
 Solo Mining steps
 --
