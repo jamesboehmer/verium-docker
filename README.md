@@ -17,6 +17,7 @@ Solo Mining steps
         docker run -it --rm --net verium --name veriumd -e RPCPORT=33987 -e RPCUSER=rpcusername -e RPCPASS=rpcpassword -v /veriumdata:/root/.verium -p 36988:36988 -p 33987:33987 launchveriumd
 
   The first time you run `launchveriumd`, it will check your data directory for the blockchain and config file, and bootstrap them using data downloaded from the vericoin web site.
+
 5. Launch a `cpuminer` container.  This will run the cpuminer, and configure it to connect to the veriumd container:
 
         docker run -it --rm --net verium --name cpuminer -e RPCPORT=veriumd -e RPCPORT=33987 -e RPCUSER=rpcusername -e RPCPASS=rpcpassword launchcpuminer
